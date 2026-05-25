@@ -1,0 +1,106 @@
+/* ── Reset ───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --glass-bg:     rgba(0, 12, 30, 0.38);
+  --glass-blur:   16px;
+  --font-hud:     'Orbitron', 'Share Tech Mono', monospace;
+}
+
+html, body, #root {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: transparent !important;
+  font-family: var(--font-hud);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Stage ───────────────────────────────────────── */
+.overlay-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* ── Pill ────────────────────────────────────────── */
+.floating-pill {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px 9px 13px;
+  border-radius: 100px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+/* per-colour border + glow */
+.pill-cyan   { border-color: rgba(0,245,255,.30); box-shadow: 0 0 18px rgba(0,245,255,.18), 0 0 50px rgba(0,245,255,.08), inset 0 1px 0 rgba(255,255,255,.10); }
+.pill-pink   { border-color: rgba(255,45,120,.32); box-shadow: 0 0 18px rgba(255,45,120,.18), 0 0 50px rgba(255,45,120,.08), inset 0 1px 0 rgba(255,255,255,.10); }
+.pill-green  { border-color: rgba(57,255,20,.28);  box-shadow: 0 0 18px rgba(57,255,20,.15),  0 0 50px rgba(57,255,20,.07),  inset 0 1px 0 rgba(255,255,255,.10); }
+.pill-yellow { border-color: rgba(255,230,0,.28);  box-shadow: 0 0 18px rgba(255,230,0,.15),  0 0 50px rgba(255,230,0,.07),  inset 0 1px 0 rgba(255,255,255,.10); }
+.pill-purple { border-color: rgba(191,95,255,.32); box-shadow: 0 0 18px rgba(191,95,255,.18), 0 0 50px rgba(191,95,255,.08), inset 0 1px 0 rgba(255,255,255,.10); }
+.pill-orange { border-color: rgba(255,140,0,.32);  box-shadow: 0 0 18px rgba(255,140,0,.18),  0 0 50px rgba(255,140,0,.08),  inset 0 1px 0 rgba(255,255,255,.10); }
+
+/* highlight sheen */
+.floating-pill::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.05) 0%, transparent 55%, rgba(0,0,0,.08) 100%);
+  pointer-events: none;
+}
+
+/* ── Emoji ───────────────────────────────────────── */
+.pill-emoji {
+  font-size: 21px;
+  line-height: 1;
+  filter: drop-shadow(0 0 5px rgba(255,255,255,.45));
+  flex-shrink: 0;
+}
+
+/* ── Text ────────────────────────────────────────── */
+.pill-text   { display: flex; flex-direction: column; gap: 1px; }
+.pill-label  { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; opacity: .55; line-height: 1; }
+.pill-msg    { font-size: 13px; font-weight: 600; letter-spacing: .04em; line-height: 1.25; }
+
+/* per-colour neon text */
+.pill-cyan   .pill-msg { color: #00f5ff; text-shadow: 0 0 8px #00f5ff, 0 0 20px rgba(0,245,255,.55); }
+.pill-cyan   .pill-label { color: #00c8d4; }
+.pill-pink   .pill-msg { color: #ff2d78; text-shadow: 0 0 8px #ff2d78, 0 0 20px rgba(255,45,120,.55); }
+.pill-pink   .pill-label { color: #ff8ab0; }
+.pill-green  .pill-msg { color: #39ff14; text-shadow: 0 0 8px #39ff14, 0 0 20px rgba(57,255,20,.55); }
+.pill-green  .pill-label { color: #7dff60; }
+.pill-yellow .pill-msg { color: #ffe600; text-shadow: 0 0 8px #ffe600, 0 0 20px rgba(255,230,0,.55); }
+.pill-yellow .pill-label { color: #ffe96e; }
+.pill-purple .pill-msg { color: #bf5fff; text-shadow: 0 0 8px #bf5fff, 0 0 20px rgba(191,95,255,.55); }
+.pill-purple .pill-label { color: #d49dff; }
+.pill-orange .pill-msg { color: #ff8c00; text-shadow: 0 0 8px #ff8c00, 0 0 20px rgba(255,140,0,.55); }
+.pill-orange .pill-label { color: #ffb84d; }
+
+/* ── HUD corner ticks ────────────────────────────── */
+.tick { position: absolute; width: 6px; height: 6px; opacity: .45; }
+.tick.tl { top: 3px;    left: 3px;  border-top: 1px solid currentColor; border-left: 1px solid currentColor; }
+.tick.tr { top: 3px;    right: 3px; border-top: 1px solid currentColor; border-right: 1px solid currentColor; }
+.tick.bl { bottom: 3px; left: 3px;  border-bottom: 1px solid currentColor; border-left: 1px solid currentColor; }
+.tick.br { bottom: 3px; right: 3px; border-bottom: 1px solid currentColor; border-right: 1px solid currentColor; }
+
+/* ── Speed trail ─────────────────────────────────── */
+.pill-trail {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 55px;
+  height: 1px;
+  background: linear-gradient(to left, rgba(255,255,255,.14), transparent);
+  pointer-events: none;
+}
