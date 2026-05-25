@@ -1,106 +1,132 @@
-/* ── Reset ───────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --glass-bg:     rgba(0, 12, 30, 0.38);
-  --glass-blur:   16px;
-  --font-hud:     'Orbitron', 'Share Tech Mono', monospace;
-}
-
-html, body, #root {
-  width: 100%; height: 100%;
-  overflow: hidden;
-  background: transparent !important;
-  font-family: var(--font-hud);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── Stage ───────────────────────────────────────── */
-.overlay-stage {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  overflow: hidden;
-  background: transparent;
-}
-
-/* ── Pill ────────────────────────────────────────── */
-.floating-pill {
+/* ───────────────────────────── */
+/* WRAPPER */
+/* ───────────────────────────── */
+.ad-plane-wrapper {
   position: absolute;
+  will-change: transform;
+}
+
+/* ───────────────────────────── */
+/* CONTAINER */
+/* ───────────────────────────── */
+.ad-plane {
+  position: relative;
+  width: fit-content;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 20px 9px 13px;
-  border-radius: 100px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  border: 1px solid rgba(255,255,255,0.12);
-  white-space: nowrap;
-  will-change: transform, opacity;
 }
 
-/* per-colour border + glow */
-.pill-cyan   { border-color: rgba(0,245,255,.30); box-shadow: 0 0 18px rgba(0,245,255,.18), 0 0 50px rgba(0,245,255,.08), inset 0 1px 0 rgba(255,255,255,.10); }
-.pill-pink   { border-color: rgba(255,45,120,.32); box-shadow: 0 0 18px rgba(255,45,120,.18), 0 0 50px rgba(255,45,120,.08), inset 0 1px 0 rgba(255,255,255,.10); }
-.pill-green  { border-color: rgba(57,255,20,.28);  box-shadow: 0 0 18px rgba(57,255,20,.15),  0 0 50px rgba(57,255,20,.07),  inset 0 1px 0 rgba(255,255,255,.10); }
-.pill-yellow { border-color: rgba(255,230,0,.28);  box-shadow: 0 0 18px rgba(255,230,0,.15),  0 0 50px rgba(255,230,0,.07),  inset 0 1px 0 rgba(255,255,255,.10); }
-.pill-purple { border-color: rgba(191,95,255,.32); box-shadow: 0 0 18px rgba(191,95,255,.18), 0 0 50px rgba(191,95,255,.08), inset 0 1px 0 rgba(255,255,255,.10); }
-.pill-orange { border-color: rgba(255,140,0,.32);  box-shadow: 0 0 18px rgba(255,140,0,.18),  0 0 50px rgba(255,140,0,.08),  inset 0 1px 0 rgba(255,255,255,.10); }
+/* ───────────────────────────── */
+/* ✈️ PLANE (FRONT) */
+/* ───────────────────────────── */
+.plane {
+  width: 90px;
+  height: auto;
+  display: block;
 
-/* highlight sheen */
-.floating-pill::after {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.05) 0%, transparent 55%, rgba(0,0,0,.08) 100%);
-  pointer-events: none;
+  position: relative;
+  z-index: 3;
+
+  filter: drop-shadow(0px 6px 6px rgba(0,0,0,0.25));
 }
 
-/* ── Emoji ───────────────────────────────────────── */
-.pill-emoji {
-  font-size: 21px;
-  line-height: 1;
-  filter: drop-shadow(0 0 5px rgba(255,255,255,.45));
-  flex-shrink: 0;
-}
-
-/* ── Text ────────────────────────────────────────── */
-.pill-text   { display: flex; flex-direction: column; gap: 1px; }
-.pill-label  { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; opacity: .55; line-height: 1; }
-.pill-msg    { font-size: 13px; font-weight: 600; letter-spacing: .04em; line-height: 1.25; }
-
-/* per-colour neon text */
-.pill-cyan   .pill-msg { color: #00f5ff; text-shadow: 0 0 8px #00f5ff, 0 0 20px rgba(0,245,255,.55); }
-.pill-cyan   .pill-label { color: #00c8d4; }
-.pill-pink   .pill-msg { color: #ff2d78; text-shadow: 0 0 8px #ff2d78, 0 0 20px rgba(255,45,120,.55); }
-.pill-pink   .pill-label { color: #ff8ab0; }
-.pill-green  .pill-msg { color: #39ff14; text-shadow: 0 0 8px #39ff14, 0 0 20px rgba(57,255,20,.55); }
-.pill-green  .pill-label { color: #7dff60; }
-.pill-yellow .pill-msg { color: #ffe600; text-shadow: 0 0 8px #ffe600, 0 0 20px rgba(255,230,0,.55); }
-.pill-yellow .pill-label { color: #ffe96e; }
-.pill-purple .pill-msg { color: #bf5fff; text-shadow: 0 0 8px #bf5fff, 0 0 20px rgba(191,95,255,.55); }
-.pill-purple .pill-label { color: #d49dff; }
-.pill-orange .pill-msg { color: #ff8c00; text-shadow: 0 0 8px #ff8c00, 0 0 20px rgba(255,140,0,.55); }
-.pill-orange .pill-label { color: #ffb84d; }
-
-/* ── HUD corner ticks ────────────────────────────── */
-.tick { position: absolute; width: 6px; height: 6px; opacity: .45; }
-.tick.tl { top: 3px;    left: 3px;  border-top: 1px solid currentColor; border-left: 1px solid currentColor; }
-.tick.tr { top: 3px;    right: 3px; border-top: 1px solid currentColor; border-right: 1px solid currentColor; }
-.tick.bl { bottom: 3px; left: 3px;  border-bottom: 1px solid currentColor; border-left: 1px solid currentColor; }
-.tick.br { bottom: 3px; right: 3px; border-bottom: 1px solid currentColor; border-right: 1px solid currentColor; }
-
-/* ── Speed trail ─────────────────────────────────── */
-.pill-trail {
+/* ───────────────────────────── */
+/* 🪢 ROPE (FROM TAIL → BANNER) */
+/* ───────────────────────────── */
+.rope {
   position: absolute;
-  right: 100%;
+
+  /* attach to plane tail (left side of plane) */
+  right: 85px;   /* adjust based on plane width */
+  top: 50%;
+
+  width: 60px;
+  height: 2px;
+
+  transform: translateY(-50%) rotate(-8deg);
+
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,0.7),
+    rgba(255,255,255,0.7) 4px,
+    rgba(0,0,0,0.2) 4px,
+    rgba(0,0,0,0.2) 8px
+  );
+
+  opacity: 0.75;
+
+  z-index: 1;
+}
+
+/* ───────────────────────────── */
+/* 🎯 BANNER (TRAILING BEHIND PLANE) */
+/* ───────────────────────────── */
+.banner {
+  position: absolute;
+
+  /* place behind plane (left side trail) */
+  right: 160px; /* distance from plane */
+
   top: 50%;
   transform: translateY(-50%);
-  width: 55px;
-  height: 1px;
-  background: linear-gradient(to left, rgba(255,255,255,.14), transparent);
-  pointer-events: none;
+
+  z-index: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 18px;
+  white-space: nowrap;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 80, 80, 0.95),
+    rgba(200, 30, 30, 0.95)
+  );
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25),
+    inset 0 2px 4px rgba(255,255,255,0.25);
+
+  animation: flap 2.5s ease-in-out infinite;
+}
+
+/* banner edges */
+.banner::before,
+.banner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.banner::before {
+  left: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.banner::after {
+  right: 0;
+  border-radius: 0 8px 8px 0;
+}
+
+/* ───────────────────────────── */
+/* FLAP (REALISTIC TRAILING FEEL) */
+/* ───────────────────────────── */
+@keyframes flap {
+  0%   { transform: translateY(-50%) rotateZ(-1deg); }
+  25%  { transform: translateY(-51%) rotateZ(0.6deg); }
+  50%  { transform: translateY(-50%) rotateZ(-0.8deg); }
+  75%  { transform: translateY(-49%) rotateZ(0.4deg); }
+  100% { transform: translateY(-50%) rotateZ(-1deg); }
 }

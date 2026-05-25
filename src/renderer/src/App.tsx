@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import plane from './assets/plane.png'
 import './App.css'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -23,24 +24,24 @@ interface Pill {
 // ── Notification library ──────────────────────────────────────────────────────
 
 const LIBRARY: Omit<Pill, 'id' | 'speedPx' | 'yPct' | 'driftAmp' | 'driftPeriod' | 'scale' | 'spawnDelay'>[] = [
-  { emoji: '🚀', label: 'DEPLOY',    msg: 'Production deployed',        color: 'cyan'   },
-  { emoji: '⚡', label: 'ALERT',     msg: 'CPU spike detected',          color: 'yellow' },
-  { emoji: '💜', label: 'SYSTEM',    msg: 'All systems nominal',          color: 'purple' },
-  { emoji: '🔥', label: 'HOT',       msg: '1,337 users online',           color: 'orange' },
-  { emoji: '✅', label: 'BUILD',     msg: 'Tests passed — 247/247',       color: 'green'  },
-  { emoji: '💬', label: 'MESSAGE',   msg: 'New message from @alex',       color: 'cyan'   },
-  { emoji: '🛡️', label: 'SECURITY',  msg: 'Threat neutralized',           color: 'green'  },
-  { emoji: '📡', label: 'SIGNAL',    msg: 'Uplink established',           color: 'cyan'   },
-  { emoji: '🎯', label: 'TARGET',    msg: 'Objective completed',          color: 'pink'   },
-  { emoji: '🌐', label: 'NETWORK',   msg: 'Global sync — 99.9% uptime',  color: 'purple' },
-  { emoji: '💾', label: 'BACKUP',    msg: 'Snapshot saved to vault',      color: 'yellow' },
-  { emoji: '🔮', label: 'AI',        msg: 'Model inference ready',        color: 'pink'   },
-  { emoji: '🦾', label: 'AGENT',     msg: 'Task force activated',         color: 'orange' },
-  { emoji: '📊', label: 'METRICS',   msg: 'Revenue +23% this week',       color: 'green'  },
-  { emoji: '🌊', label: 'STREAM',    msg: 'Data pipeline flowing',        color: 'cyan'   },
-  { emoji: '🧬', label: 'BIO',       msg: 'Sequence analysis complete',   color: 'pink'   },
-  { emoji: '🏆', label: 'SCORE',     msg: 'New high score achieved',      color: 'yellow' },
-  { emoji: '🛸', label: 'UFO',       msg: 'Unknown object detected',      color: 'purple' },
+  { emoji: '🚀', label: 'DEPLOY', msg: 'Production deployed', color: 'cyan' },
+  { emoji: '⚡', label: 'ALERT', msg: 'CPU spike detected', color: 'yellow' },
+  { emoji: '💜', label: 'SYSTEM', msg: 'All systems nominal', color: 'purple' },
+  { emoji: '🔥', label: 'HOT', msg: '1,337 users online', color: 'orange' },
+  { emoji: '✅', label: 'BUILD', msg: 'Tests passed — 247/247', color: 'green' },
+  { emoji: '💬', label: 'MESSAGE', msg: 'New message from @alex', color: 'cyan' },
+  { emoji: '🛡️', label: 'SECURITY', msg: 'Threat neutralized', color: 'green' },
+  { emoji: '📡', label: 'SIGNAL', msg: 'Uplink established', color: 'cyan' },
+  { emoji: '🎯', label: 'TARGET', msg: 'Objective completed', color: 'pink' },
+  { emoji: '🌐', label: 'NETWORK', msg: 'Global sync — 99.9% uptime', color: 'purple' },
+  { emoji: '💾', label: 'BACKUP', msg: 'Snapshot saved to vault', color: 'yellow' },
+  { emoji: '🔮', label: 'AI', msg: 'Model inference ready', color: 'pink' },
+  { emoji: '🦾', label: 'AGENT', msg: 'Task force activated', color: 'orange' },
+  { emoji: '📊', label: 'METRICS', msg: 'Revenue +23% this week', color: 'green' },
+  { emoji: '🌊', label: 'STREAM', msg: 'Data pipeline flowing', color: 'cyan' },
+  { emoji: '🧬', label: 'BIO', msg: 'Sequence analysis complete', color: 'pink' },
+  { emoji: '🏆', label: 'SCORE', msg: 'New high score achieved', color: 'yellow' },
+  { emoji: '🛸', label: 'UFO', msg: 'Unknown object detected', color: 'purple' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -74,52 +75,67 @@ function FloatingPill({
   stageH,
   onDone,
 }: {
-  pill: Pill
-  stageW: number
-  stageH: number
-  onDone: (id: string) => void
+  pill: Pill;
+  stageW: number;
+  stageH: number;
+  onDone: (id: string) => void;
 }) {
-  const startX = -PILL_W - 10
-  const endX = stageW + 20
-  const duration = (endX - startX) / pill.speedPx
-  const yPx = (pill.yPct / 100) * stageH
+  const startX = -PILL_W - 10;
+  const endX = stageW + 20;
+  const duration = (endX - startX) / pill.speedPx;
+  const yPx = (pill.yPct / 100) * stageH;
 
   return (
     <motion.div
-      className={`floating-pill pill-${pill.color}`}
-      style={{ top: yPx, left: 0, scale: pill.scale }}
+      className="ad-plane-wrapper"
+      style={{
+        top: yPx,
+        left: 0,
+        scale: pill.scale,
+      }}
       initial={{ x: startX, opacity: 0 }}
       animate={{
         x: [startX, endX],
-        y: [0, -pill.driftAmp, pill.driftAmp * 0.5, -pill.driftAmp * 0.3, pill.driftAmp, 0],
+        y: [
+          0,
+          -pill.driftAmp,
+          pill.driftAmp * 0.5,
+          -pill.driftAmp * 0.3,
+          pill.driftAmp,
+          0,
+        ],
         opacity: [0, 1, 1, 1, 1, 0.95, 0],
       }}
       transition={{
-        x: { duration, ease: 'linear', delay: pill.spawnDelay },
-        y: { duration: pill.driftPeriod, repeat: Infinity, ease: 'easeInOut', delay: pill.spawnDelay },
+        x: { duration, ease: "linear", delay: pill.spawnDelay },
+        y: {
+          duration: pill.driftPeriod,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: pill.spawnDelay,
+        },
         opacity: {
           duration,
-          ease: 'linear',
-          times: [0, 0.04, 0.1, 0.85, 0.94, 0.98, 1],
+          ease: "linear",
           delay: pill.spawnDelay,
         },
       }}
       onAnimationComplete={() => onDone(pill.id)}
     >
-      {/* HUD corner ticks */}
-      <span className="tick tl" /><span className="tick tr" />
-      <span className="tick bl" /><span className="tick br" />
+      <div className="ad-plane">
+        {/* plane (anchor) */}
+        <img src={plane} alt="plane" className="plane" />
 
-      {/* speed trail */}
-      <div className="pill-trail" />
+        {/* rope */}
+        <div className="rope" />
 
-      <span className="pill-emoji">{pill.emoji}</span>
-      <div className="pill-text">
-        <span className="pill-label">{pill.label}</span>
-        <span className="pill-msg">{pill.msg}</span>
+        {/* banner */}
+        <div className="banner">
+          <span>{pill.msg}</span>
+        </div>
       </div>
     </motion.div>
-  )
+  );
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
