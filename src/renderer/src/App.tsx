@@ -1,153 +1,144 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import plane from './assets/plane.png'
 import './App.css'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 
-type Color = 'cyan' | 'pink' | 'green' | 'yellow' | 'purple' | 'orange'
-
-interface Pill {
+interface Flight {
   id: string
+  msg: string
   emoji: string
   label: string
-  msg: string
-  color: Color
-  speedPx: number      // px per second across screen
-  yPct: number         // 0–100 vertical position %
-  driftAmp: number     // vertical float amplitude px
-  driftPeriod: number  // seconds per float cycle
-  scale: number        // size multiplier
-  spawnDelay: number   // seconds before motion starts
+  colorHue: number   // HSL hue for the banner
+  speedPx: number    // px/s across screen
+  yPct: number       // vertical position 0–100%
+  driftAmp: number
+  driftPeriod: number
 }
 
-// ── Notification library ──────────────────────────────────────────────────────
+// ── Message library ────────────────────────────────────────────────────────────
 
-const LIBRARY: Omit<Pill, 'id' | 'speedPx' | 'yPct' | 'driftAmp' | 'driftPeriod' | 'scale' | 'spawnDelay'>[] = [
-  { emoji: '🚀', label: 'DEPLOY', msg: 'Production deployed', color: 'cyan' },
-  { emoji: '⚡', label: 'ALERT', msg: 'CPU spike detected', color: 'yellow' },
-  { emoji: '💜', label: 'SYSTEM', msg: 'All systems nominal', color: 'purple' },
-  { emoji: '🔥', label: 'HOT', msg: '1,337 users online', color: 'orange' },
-  { emoji: '✅', label: 'BUILD', msg: 'Tests passed — 247/247', color: 'green' },
-  { emoji: '💬', label: 'MESSAGE', msg: 'New message from @alex', color: 'cyan' },
-  { emoji: '🛡️', label: 'SECURITY', msg: 'Threat neutralized', color: 'green' },
-  { emoji: '📡', label: 'SIGNAL', msg: 'Uplink established', color: 'cyan' },
-  { emoji: '🎯', label: 'TARGET', msg: 'Objective completed', color: 'pink' },
-  { emoji: '🌐', label: 'NETWORK', msg: 'Global sync — 99.9% uptime', color: 'purple' },
-  { emoji: '💾', label: 'BACKUP', msg: 'Snapshot saved to vault', color: 'yellow' },
-  { emoji: '🔮', label: 'AI', msg: 'Model inference ready', color: 'pink' },
-  { emoji: '🦾', label: 'AGENT', msg: 'Task force activated', color: 'orange' },
-  { emoji: '📊', label: 'METRICS', msg: 'Revenue +23% this week', color: 'green' },
-  { emoji: '🌊', label: 'STREAM', msg: 'Data pipeline flowing', color: 'cyan' },
-  { emoji: '🧬', label: 'BIO', msg: 'Sequence analysis complete', color: 'pink' },
-  { emoji: '🏆', label: 'SCORE', msg: 'New high score achieved', color: 'yellow' },
-  { emoji: '🛸', label: 'UFO', msg: 'Unknown object detected', color: 'purple' },
+const MESSAGES = [
+  { emoji: '🚀', label: 'DEPLOY', msg: 'Production deployed', hue: 195 },
+  { emoji: '⚡', label: 'ALERT', msg: 'CPU spike detected', hue: 45 },
+  { emoji: '✅', label: 'BUILD', msg: 'Tests passed — 247/247', hue: 140 },
+  { emoji: '🔥', label: 'HOT', msg: '1,337 users online', hue: 20 },
+  { emoji: '💜', label: 'SYSTEM', msg: 'All systems nominal', hue: 270 },
+  { emoji: '📡', label: 'SIGNAL', msg: 'Uplink established', hue: 210 },
+  { emoji: '🎯', label: 'TARGET', msg: 'Objective completed', hue: 340 },
+  { emoji: '🔮', label: 'AI', msg: 'Model inference ready', hue: 290 },
+  { emoji: '📊', label: 'METRICS', msg: 'Revenue +23% this week', hue: 160 },
+  { emoji: '🛡️', label: 'SECURE', msg: 'Threat neutralized', hue: 120 },
 ]
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 let counter = 0
-const uid = () => `pill-${++counter}-${Date.now()}`
+const uid = () => `flight-${++counter}`
 const rand = (lo: number, hi: number) => lo + Math.random() * (hi - lo)
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
-function spawnPill(stageH: number, delay = 0): Pill {
-  const base = pick(LIBRARY)
+function spawnFlight(): Flight {
+  const base = pick(MESSAGES)
   return {
-    ...base,
     id: uid(),
-    speedPx: rand(90, 230),
-    yPct: rand(12, 88),
-    driftAmp: rand(10, 30),
-    driftPeriod: rand(2.5, 5.5),
-    scale: rand(0.88, 1.12),
-    spawnDelay: delay,
+    msg: base.msg,
+    emoji: base.emoji,
+    label: base.label,
+    colorHue: base.hue,
+    speedPx: rand(110, 200),
+    // vertically centered ± 15% so it feels prominent but not clipping edges
+    yPct: rand(10, 35),
+    driftAmp: rand(12, 28),
+    driftPeriod: rand(3, 5),
   }
 }
 
-// ── FloatingPill ──────────────────────────────────────────────────────────────
+// ── Plane + Banner ─────────────────────────────────────────────────────────────
 
-const PILL_W = 290  // estimated pill width for off-screen start
+const PLANE_W = 180   // rendered plane width
+const BANNER_W = 320  // banner width
+const ROPE_W = 80     // rope length
+const TOTAL_W = PLANE_W + ROPE_W + BANNER_W // ~580px
 
-function FloatingPill({
-  pill,
+function SingleFlight({
+  flight,
   stageW,
   stageH,
   onDone,
 }: {
-  pill: Pill;
-  stageW: number;
-  stageH: number;
-  onDone: (id: string) => void;
+  flight: Flight
+  stageW: number
+  stageH: number
+  onDone: (id: string) => void
 }) {
-  const startX = -PILL_W - 10;
-  const endX = stageW + 20;
-  const duration = (endX - startX) / pill.speedPx;
-  const yPx = (pill.yPct / 100) * stageH;
+  const startX = -TOTAL_W - 20
+  const endX = stageW + 20
+  const duration = (endX - startX) / flight.speedPx
+  const yPx = (flight.yPct / 100) * stageH
+
+  // Vertical sine drift keyframes
+  const yFrames = [0, -flight.driftAmp, flight.driftAmp * 0.6, -flight.driftAmp * 0.4, flight.driftAmp, 0]
 
   return (
     <motion.div
-      className="ad-plane-wrapper"
-      style={{
-        top: yPx,
-        left: 0,
-        scale: pill.scale,
-      }}
+      className="flight-wrapper"
+      style={{ top: yPx }}
       initial={{ x: startX, opacity: 0 }}
       animate={{
         x: [startX, endX],
-        y: [
-          0,
-          -pill.driftAmp,
-          pill.driftAmp * 0.5,
-          -pill.driftAmp * 0.3,
-          pill.driftAmp,
-          0,
-        ],
-        opacity: [0, 1, 1, 1, 1, 0.95, 0],
+        y: yFrames,
+        opacity: [0, 1, 1, 1, 1, 1, 0],
       }}
       transition={{
-        x: { duration, ease: "linear", delay: pill.spawnDelay },
-        y: {
-          duration: pill.driftPeriod,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: pill.spawnDelay,
-        },
-        opacity: {
-          duration,
-          ease: "linear",
-          delay: pill.spawnDelay,
-        },
+        x: { duration, ease: 'linear' },
+        y: { duration: flight.driftPeriod, repeat: Infinity, ease: 'easeInOut' },
+        opacity: { duration, ease: 'linear', times: [0, 0.05, 0.15, 0.5, 0.85, 0.95, 1] },
       }}
-      onAnimationComplete={() => onDone(pill.id)}
+      onAnimationComplete={() => onDone(flight.id)}
     >
-      <div className="ad-plane">
-        {/* plane (anchor) */}
-        <img src={plane} alt="plane" className="plane" />
+      {/* Rig order: banner (trailing) → rope → plane (leading right) */}
+      <div className="flight-rig">
+        {/* Banner — trails behind on the left */}
+        <div
+          className="banner"
+          style={{
+            background: `linear-gradient(135deg,
+              hsl(${flight.colorHue}, 90%, 55%) 0%,
+              hsl(${flight.colorHue}, 80%, 38%) 100%)`
+          }}
+        >
+          <span className="banner-emoji">{flight.emoji}</span>
+          <div className="banner-text">
+            <span className="banner-label">{flight.label}</span>
+            <span className="banner-msg">{flight.msg}</span>
+          </div>
+        </div>
 
-        {/* rope */}
+        {/* Rope */}
         <div className="rope" />
 
-        {/* banner */}
-        <div className="banner">
-          <span>{pill.msg}</span>
+        {/* Plane — leads on the right, facing right */}
+        <div className="plane-wrap">
+          <img src={plane} alt="plane" className="plane-img" />
         </div>
       </div>
     </motion.div>
-  );
+  )
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
+// ── App ────────────────────────────────────────────────────────────────────────
 
-const MAX_PILLS = 8
-const SPAWN_MS = 1700
+// How long to wait between flights (ms): flight finishes → next spawns
+const INTER_FLIGHT_DELAY = 1200
 
 export default function App() {
   const [stage, setStage] = useState({ w: window.innerWidth, h: window.innerHeight })
-  const [pills, setPills] = useState<Pill[]>([])
+  const [flight, setFlight] = useState<Flight | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Track stage size — also listen for Electron display-info
+  // Track stage size
   useEffect(() => {
     const update = () => setStage({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener('resize', update)
@@ -161,37 +152,35 @@ export default function App() {
     return () => window.removeEventListener('resize', update)
   }, [])
 
-  // Initial burst + continuous spawning
+  // Launch first flight after a short delay
   useEffect(() => {
-    // Seed 5 pills with staggered delays so screen isn't empty on launch
-    setPills(Array.from({ length: 5 }, (_, i) => spawnPill(stage.h, i * 0.55)))
-
-    const id = setInterval(() => {
-      setPills(prev => {
-        if (prev.length >= MAX_PILLS) return prev
-        return [...prev, spawnPill(stage.h)]
-      })
-    }, SPAWN_MS)
-
-    return () => clearInterval(id)
-  }, [stage.h])
-
-  const onDone = useCallback((id: string) => {
-    setPills(prev => prev.filter(p => p.id !== id))
+    const t = setTimeout(() => setFlight(spawnFlight()), 800)
+    return () => clearTimeout(t)
   }, [])
+
+  // When a flight finishes, wait then launch the next
+  const onDone = useCallback((id: string) => {
+    setFlight(null)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      setFlight(spawnFlight())
+    }, INTER_FLIGHT_DELAY)
+  }, [])
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
 
   return (
     <div className="overlay-stage">
       <AnimatePresence>
-        {pills.map(pill => (
-          <FloatingPill
-            key={pill.id}
-            pill={pill}
+        {flight && (
+          <SingleFlight
+            key={flight.id}
+            flight={flight}
             stageW={stage.w}
             stageH={stage.h}
             onDone={onDone}
           />
-        ))}
+        )}
       </AnimatePresence>
     </div>
   )
