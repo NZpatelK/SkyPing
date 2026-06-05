@@ -7,7 +7,6 @@ let overlayWindow: BrowserWindow | null = null
 function getFullscreenBounds() {
   const displays = screen.getAllDisplays()
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-
   for (const d of displays) {
     const { x, y, width, height } = d.bounds
     minX = Math.min(minX, x)
@@ -15,7 +14,6 @@ function getFullscreenBounds() {
     maxX = Math.max(maxX, x + width)
     maxY = Math.max(maxY, y + height)
   }
-
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
 }
 
@@ -27,50 +25,37 @@ function createOverlayWindow() {
     y: bounds.y,
     width: bounds.width,
     height: bounds.height,
-
-    // ── Overlay essentials ──────────────────────
     transparent: true,
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    focusable: false,
+    focusable: true,          // must be true for modal input
     hasShadow: false,
     roundedCorners: false,
     backgroundColor: '#00000000',
-
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      backgroundThrottling: false, // keep animating even when not focused
+      backgroundThrottling: false,
     },
   })
 
-  // ── Click-through: all mouse events fall through to OS ──────────────────────
-  overlayWindow.setIgnoreMouseEvents(true)
-
-  // ── Above EVERYTHING — including fullscreen apps ────────────────────────────
+  // Start click-through
+  overlayWindow.setIgnoreMouseEvents(true, { forward: true })
   overlayWindow.setAlwaysOnTop(true, 'screen-saver')
   overlayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
 
-  // ── Send display geometry to renderer once loaded ───────────────────────────
-  overlayWindow.webContents.once('did-finish-load', () => {
-    sendDisplayInfo()
-  })
+  overlayWindow.webContents.once('did-finish-load', () => sendDisplayInfo())
 
-  // ── Load Vite dev server in dev, built file in production ───────────────────
   if (process.env['ELECTRON_RENDERER_URL']) {
-    // electron-vite sets this automatically in dev mode
     overlayWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    // Detached devtools won't break the transparent overlay:
-    // overlayWindow.webContents.openDevTools({ mode: 'detach' })
   } else {
     overlayWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
   overlayWindow.on('closed', () => { overlayWindow = null })
 
-  // ── Re-cover all monitors on display changes ────────────────────────────────
   screen.on('display-added', repositionWindow)
   screen.on('display-removed', repositionWindow)
   screen.on('display-metrics-changed', repositionWindow)
@@ -79,8 +64,10 @@ function createOverlayWindow() {
 function sendDisplayInfo() {
   if (!overlayWindow || overlayWindow.isDestroyed()) return
   const bounds = getFullscreenBounds()
+  const primary = screen.getPrimaryDisplay()
   overlayWindow.webContents.send('display-info', {
     totalBounds: bounds,
+    primaryBounds: primary.bounds,   // ← added: exact primary screen rect
     displays: screen.getAllDisplays().map((d) => ({
       id: d.id,
       bounds: d.bounds,
@@ -96,17 +83,33 @@ function repositionWindow() {
   sendDisplayInfo()
 }
 
-// ─── App lifecycle ─────────────────────────────────────────────────────────────
+function setModalMode(open: boolean) {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return
+  if (open) {
+    overlayWindow.setIgnoreMouseEvents(false)
+    overlayWindow.focus()
+  } else {
+    overlayWindow.setIgnoreMouseEvents(true, { forward: true })
+  }
+}
+
+// ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
   createOverlayWindow()
 
-  // Ctrl+Shift+Q  →  quit (needed since the window is click-through / no taskbar)
   globalShortcut.register('CommandOrControl+Shift+Q', () => app.quit())
 
-  // Ctrl+Shift+H  →  toggle overlay visibility
   globalShortcut.register('CommandOrControl+Shift+H', () => {
     if (!overlayWindow || overlayWindow.isDestroyed()) return
     overlayWindow.isVisible() ? overlayWindow.hide() : overlayWindow.show()
+  })
+
+  // Cmd+Shift+R → open reminder modal
+  globalShortcut.register('CommandOrControl+Shift+R', () => {
+    if (!overlayWindow || overlayWindow.isDestroyed()) return
+    overlayWindow.show()
+    setModalMode(true)
+    overlayWindow.webContents.send('open-reminder-modal')
   })
 })
 
@@ -120,13 +123,17 @@ app.on('activate', () => {
 
 app.on('will-quit', () => globalShortcut.unregisterAll())
 
-// ─── IPC ───────────────────────────────────────────────────────────────────────
+// ─── IPC ─────────────────────────────────────────────────────────────────────
 ipcMain.handle('get-display-info', () => {
   const bounds = getFullscreenBounds()
+  const primary = screen.getPrimaryDisplay()
   return {
     totalBounds: bounds,
+    primaryBounds: primary.bounds,
     displays: screen.getAllDisplays().map((d) => ({
       id: d.id, bounds: d.bounds, scaleFactor: d.scaleFactor,
     })),
   }
 })
+
+ipcMain.on('modal-closed', () => setModalMode(false))

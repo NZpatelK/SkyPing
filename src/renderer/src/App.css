@@ -6,7 +6,6 @@
   pointer-events: none;
 }
 
-/* ── Wrapper: positioned absolutely, anchors the whole rig ── */
 .flight-wrapper {
   position: absolute;
   left: 0;
@@ -14,20 +13,16 @@
   pointer-events: none;
 }
 
-/* ── Rig: banner (left) → rope → plane (right) ────────────── */
 .flight-rig {
   display: flex;
   align-items: center;
   gap: 0;
 }
 
-/* ── Plane ────────────────────────────────────────────────── */
 .plane-wrap {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  /* Pull plane left so its visible body meets the rope end.
-     Adjust this value if your PNG has more/less left padding. */
   margin-left: -32px;
   filter: drop-shadow(0 8px 18px rgba(0,0,0,0.45));
 }
@@ -38,16 +33,14 @@
   display: block;
 }
 
-/* ── Rope ─────────────────────────────────────────────────── */
 .rope {
   flex-shrink: 0;
   position: relative;
-  z-index: 1; /* above banner, below plane via plane-wrap z stacking */
+  z-index: 1;
   width: 150px;
   height: 3px;
   margin: 0;
   transform: rotate(3deg);
-
   background: repeating-linear-gradient(
     90deg,
     rgba(255,255,255,0.85) 0px,
@@ -55,12 +48,10 @@
     rgba(0,0,0,0.25) 5px,
     rgba(0,0,0,0.25) 10px
   );
-
   box-shadow: 0 2px 6px rgba(0,0,0,0.35);
   border-radius: 2px;
 }
 
-/* ── Banner ───────────────────────────────────────────────── */
 .banner {
   position: relative;
   flex-shrink: 0;
@@ -68,31 +59,24 @@
   align-items: center;
   gap: 12px;
   padding: 14px 22px;
-  width: 320px;
-
+  width: 360px;
   border-radius: 12px;
   border: 1.5px solid rgba(255,255,255,0.25);
-
   box-shadow:
     0 16px 40px rgba(0,0,0,0.5),
     0 4px 12px rgba(0,0,0,0.3),
     inset 0 1px 0 rgba(255,255,255,0.3),
     inset 0 -1px 0 rgba(0,0,0,0.15);
-
   backdrop-filter: blur(4px);
   overflow: hidden;
-
   animation: banner-flap 3s ease-in-out infinite;
   transform-origin: right center;
 }
 
-/* right edge fold — rope attaches here */
 .banner::before {
   content: "";
   position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
+  right: 0; top: 0; bottom: 0;
   width: 14px;
   background: rgba(0,0,0,0.15);
   border-radius: 0 12px 12px 0;
@@ -132,12 +116,200 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Banner trailing flap */
 @keyframes banner-flap {
-  0%   { transform: rotateY(0deg)   rotateZ(-0.8deg); }
-  20%  { transform: rotateY(1.5deg) rotateZ(0.5deg);  }
-  40%  { transform: rotateY(-1deg)  rotateZ(-0.6deg); }
-  60%  { transform: rotateY(2deg)   rotateZ(0.3deg);  }
-  80%  { transform: rotateY(-0.5deg)rotateZ(-0.4deg); }
-  100% { transform: rotateY(0deg)   rotateZ(-0.8deg); }
+  0%   { transform: rotateY(0deg)    rotateZ(-0.8deg); }
+  20%  { transform: rotateY(1.5deg)  rotateZ(0.5deg);  }
+  40%  { transform: rotateY(-1deg)   rotateZ(-0.6deg); }
+  60%  { transform: rotateY(2deg)    rotateZ(0.3deg);  }
+  80%  { transform: rotateY(-0.5deg) rotateZ(-0.4deg); }
+  100% { transform: rotateY(0deg)    rotateZ(-0.8deg); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1000;
+  pointer-events: all;
+  /* no flex — modal is absolutely positioned via JS pixel coords */
+}
+
+.modal {
+  background: rgba(16, 16, 20, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  color: #fff;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.7),
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  pointer-events: all;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.modal-emoji { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+
+.modal-header-text { flex: 1; min-width: 0; }
+
+.modal-title {
+  font-size: 17px; font-weight: 600; margin: 0 0 2px; color: #fff;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.modal-subtitle {
+  font-size: 12px; color: rgba(255,255,255,0.38); margin: 0;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.modal-close {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+.modal-field { margin-bottom: 18px; }
+
+.modal-label {
+  display: block;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); margin-bottom: 8px;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.modal-label-hint {
+  font-weight: 400; text-transform: none; letter-spacing: 0;
+  color: rgba(255,180,50,0.7);
+}
+
+.modal-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #fff; font-size: 14px; padding: 10px 13px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+.modal-input::placeholder { color: rgba(255,255,255,0.22); }
+.modal-input:focus {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.09);
+}
+
+.modal-time-row { display: flex; align-items: center; gap: 10px; }
+.modal-time-input { flex: 1; min-width: 0; }
+
+.modal-time-badge {
+  flex-shrink: 0; font-size: 12px; font-weight: 500;
+  padding: 4px 10px; border-radius: 99px;
+  background: rgba(100, 210, 140, 0.15); color: rgba(100, 220, 140, 0.9);
+  border: 1px solid rgba(100, 210, 140, 0.25);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+.modal-time-badge--warn {
+  background: rgba(255, 160, 60, 0.15); color: rgba(255, 180, 80, 0.9);
+  border-color: rgba(255, 160, 60, 0.25);
+}
+
+.modal-hint {
+  font-size: 13px; color: rgba(255,255,255,0.25); margin: 0; font-style: italic;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.offset-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+.offset-chip {
+  padding: 6px 14px; border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
+  font-size: 13px; cursor: pointer; transition: all 0.14s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.offset-chip:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.1);
+}
+.offset-chip.selected {
+  background: #fff; border-color: #fff; color: #111; font-weight: 600;
+}
+
+.modal-error {
+  font-size: 12px; color: rgba(255, 90, 90, 0.9); margin: 0 0 14px;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Action row: test + save ── */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modal-test {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  white-space: nowrap;
+}
+.modal-test:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.35);
+  color: #fff;
+}
+.modal-test.fired {
+  background: rgba(100, 210, 140, 0.2);
+  border-color: rgba(100, 210, 140, 0.4);
+  color: rgba(130, 230, 160, 0.95);
+}
+
+.modal-save {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.modal-save:hover:not(:disabled) { opacity: 0.88; }
+.modal-save:active:not(:disabled) { transform: scale(0.98); }
+.modal-save:disabled { opacity: 0.28; cursor: not-allowed; }
