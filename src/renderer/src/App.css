@@ -132,12 +132,11 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.2);
+  /* backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); */
   z-index: 1000;
   pointer-events: all;
-  /* no flex — modal is absolutely positioned via JS pixel coords */
 }
 
 .modal {
@@ -153,11 +152,37 @@
   pointer-events: all;
 }
 
+/* Wide two-column layout */
+.modal--wide {
+  padding: 0;
+  overflow: hidden;
+}
+
+.modal-columns {
+  display: flex;
+  height: 520px;
+}
+
+.modal-left {
+  flex: 0 0 400px;
+  padding: 24px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.modal-divider {
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+/* ── Header ── */
 .modal-header {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .modal-emoji { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
@@ -189,7 +214,7 @@
 }
 .modal-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
 
-.modal-field { margin-bottom: 18px; }
+.modal-field { margin-bottom: 16px; }
 
 .modal-label {
   display: block;
@@ -203,6 +228,39 @@
   color: rgba(255,180,50,0.7);
 }
 
+/* ── Reminder Type Grid ── */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.type-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: all 0.14s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.type-chip:hover:not(.selected) {
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.75);
+}
+.type-chip.selected {
+  font-weight: 600;
+}
+.type-chip-emoji { font-size: 18px; line-height: 1; }
+.type-chip-label { font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
+
+/* ── Inputs ── */
 .modal-input {
   width: 100%; box-sizing: border-box;
   background: rgba(255,255,255,0.06);
@@ -221,7 +279,6 @@
 }
 
 .modal-time-row { display: flex; align-items: center; gap: 10px; }
-.modal-time-input { flex: 1; min-width: 0; }
 
 .modal-time-selects {
   display: flex;
@@ -248,7 +305,6 @@
   transition: border-color 0.15s, background 0.15s;
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
   color-scheme: dark;
-  /* Ensure the dropdown renders above everything */
   position: relative;
   z-index: 1100;
 }
@@ -289,17 +345,22 @@
   font-size: 13px; cursor: pointer; transition: all 0.14s;
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
 }
-.offset-chip:hover {
+.offset-chip:hover:not(.selected) {
   border-color: rgba(255,255,255,0.3);
   color: rgba(255,255,255,0.9);
   background: rgba(255,255,255,0.1);
 }
 .offset-chip.selected {
-  background: #fff; border-color: #fff; color: #111; font-weight: 600;
+  font-weight: 600;
+  color: #000;
+}
+.offset-chip.small {
+  padding: 4px 10px;
+  font-size: 11px;
 }
 
 .modal-error {
-  font-size: 12px; color: rgba(255, 90, 90, 0.9); margin: 0 0 14px;
+  font-size: 12px; color: rgba(255, 90, 90, 0.9); margin: 0 0 12px;
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
 }
 
@@ -307,7 +368,8 @@
 .modal-actions {
   display: flex;
   gap: 10px;
-  margin-top: 4px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .modal-test {
@@ -324,7 +386,7 @@
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
   white-space: nowrap;
 }
-.modal-test:hover:not(:disabled) {
+.modal-test:hover:not(:disabled):not(.dimmed) {
   background: rgba(255,255,255,0.14);
   border-color: rgba(255,255,255,0.35);
   color: #fff;
@@ -335,6 +397,10 @@
   border-color: rgba(100, 210, 140, 0.4);
   color: rgba(130, 230, 160, 0.95);
   cursor: not-allowed;
+}
+.modal-test.dimmed {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .modal-save {
@@ -347,9 +413,298 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s, background 0.2s;
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
 }
 .modal-save:hover:not(:disabled) { opacity: 0.88; }
 .modal-save:active:not(:disabled) { transform: scale(0.98); }
 .modal-save:disabled { opacity: 0.28; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════
+   ACTIVE REMINDERS PANEL (right column)
+═══════════════════════════════════════════════════════════ */
+
+.active-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.active-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 20px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+}
+
+.active-panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-panel-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-panel-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px;
+}
+
+.active-panel-empty-icon { font-size: 32px; margin-bottom: 6px; opacity: 0.4; }
+
+.active-panel-empty p {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  text-align: center;
+}
+
+.active-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.active-list::-webkit-scrollbar { width: 4px; }
+.active-list::-webkit-scrollbar-track { background: transparent; }
+.active-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+/* ── Individual reminder card ── */
+.active-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 10px 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.04);
+  transition: background 0.14s, border-color 0.14s;
+}
+.active-item:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.active-item-type-dot {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  /* background set inline via type color at 20% opacity */
+  background: rgba(255,255,255,0.08);
+  filter: brightness(0.9);
+}
+
+.active-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.active-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.active-item-type-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  border: 1px solid;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.active-item-time {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-item-countdown {
+  font-size: 11px;
+  color: rgba(255,255,255,0.28);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-item-offsets {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.active-item-offset-pill {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+.active-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.active-item-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background 0.14s;
+  opacity: 0.5;
+}
+.active-item-btn:hover { background: rgba(255,255,255,0.1); opacity: 1; }
+.active-item-btn.delete:hover { background: rgba(239,68,68,0.2); }
+
+/* ── Edit row (inline) ── */
+.edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+}
+
+.edit-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: #fff; font-size: 13px; padding: 7px 10px;
+  outline: none;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+.edit-input::placeholder { color: rgba(255,255,255,0.25); }
+.edit-input:focus { border-color: rgba(255,255,255,0.3); }
+
+.edit-type-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.edit-type-chip {
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.13s;
+  line-height: 1;
+}
+.edit-type-chip:hover:not(.selected) { background: rgba(255,255,255,0.1); }
+.edit-type-chip.selected { border-width: 1.5px; }
+
+.edit-time-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.edit-select {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 6px;
+  outline: none;
+  cursor: pointer;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+}
+.edit-select option { background: #1a1a22; color: #fff; }
+
+.edit-offset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 7px;
+  justify-content: flex-end;
+}
+
+.edit-cancel {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.13s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.edit-cancel:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+.edit-save {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.13s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.edit-save:hover:not(:disabled) { opacity: 0.85; }
+.edit-save:disabled { opacity: 0.3; cursor: not-allowed; }
