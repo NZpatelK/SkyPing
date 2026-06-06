@@ -223,6 +223,44 @@
 .modal-time-row { display: flex; align-items: center; gap: 10px; }
 .modal-time-input { flex: 1; min-width: 0; }
 
+.modal-time-selects {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.modal-time-colon {
+  color: rgba(255,255,255,0.5);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.modal-select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: dark;
+  /* Ensure the dropdown renders above everything */
+  position: relative;
+  z-index: 1100;
+}
+.modal-select:focus {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.09);
+}
+.modal-select option {
+  background: #1a1a22;
+  color: #fff;
+}
+
 .modal-time-badge {
   flex-shrink: 0; font-size: 12px; font-weight: 500;
   padding: 4px 10px; border-radius: 99px;
@@ -286,15 +324,17 @@
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
   white-space: nowrap;
 }
-.modal-test:hover {
+.modal-test:hover:not(:disabled) {
   background: rgba(255,255,255,0.14);
   border-color: rgba(255,255,255,0.35);
   color: #fff;
 }
-.modal-test.fired {
+.modal-test.fired,
+.modal-test:disabled {
   background: rgba(100, 210, 140, 0.2);
   border-color: rgba(100, 210, 140, 0.4);
   color: rgba(130, 230, 160, 0.95);
+  cursor: not-allowed;
 }
 
 .modal-save {

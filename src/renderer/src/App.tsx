@@ -156,7 +156,8 @@ function ReminderModal({ onSave, onClose, onTest, displayInfo }: {
   const [selectedOffsets, setSelectedOffsets] = useState<Set<number>>(new Set())
   const [emoji] = useState(pickEmoji)
   const [error, setError] = useState('')
-  const [testFired, setTestFired] = useState(false)
+  const [testCooldown, setTestCooldown] = useState(false)
+  const testTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── Pixel-perfect centre of the primary display within the canvas ────────────
   // totalBounds.x/y = where the canvas starts in screen space (e.g. -1280 on left monitor)
@@ -230,11 +231,21 @@ function ReminderModal({ onSave, onClose, onTest, displayInfo }: {
     onClose()
   }
 
+  // Cleanup cooldown timer on unmount
+  useEffect(() => () => {
+    if (testTimerRef.current) clearTimeout(testTimerRef.current)
+  }, [])
+
   const handleTest = () => {
+    if (testCooldown) return
     const meetingTime = getMeetingDate() ?? new Date(Date.now() + 5 * 60000)
     onTest(name.trim() || 'Test reminder', emoji, meetingTime)
-    setTestFired(true)
-    setTimeout(() => setTestFired(false), 2000)
+    setTestCooldown(true)
+    if (testTimerRef.current) clearTimeout(testTimerRef.current)
+    testTimerRef.current = setTimeout(() => {
+      setTestCooldown(false)
+      testTimerRef.current = null
+    }, 3000)
   }
 
   const formatTimeLeft = (mins: number) => {
@@ -278,16 +289,43 @@ function ReminderModal({ onSave, onClose, onTest, displayInfo }: {
           />
         </div>
 
-        {/* Meeting time */}
+        {/* Meeting time — custom selects avoid native picker appearing behind the modal */}
         <div className="modal-field">
           <label className="modal-label">Meeting time</label>
           <div className="modal-time-row">
-            <input
-              className="modal-input modal-time-input"
-              type="time"
-              value={timeInput}
-              onChange={e => { setTimeInput(e.target.value); setError('') }}
-            />
+            <div className="modal-time-selects">
+              <select
+                className="modal-select"
+                value={timeInput ? timeInput.split(':')[0] : ''}
+                onChange={e => {
+                  const hh = e.target.value
+                  const mm = timeInput ? timeInput.split(':')[1] ?? '00' : '00'
+                  setTimeInput(hh ? `${hh}:${mm}` : '')
+                  setError('')
+                }}
+              >
+                <option value="">HH</option>
+                {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+              <span className="modal-time-colon">:</span>
+              <select
+                className="modal-select"
+                value={timeInput ? timeInput.split(':')[1] ?? '' : ''}
+                onChange={e => {
+                  const mm = e.target.value
+                  const hh = timeInput ? timeInput.split(':')[0] ?? '00' : '00'
+                  setTimeInput(mm !== '' ? `${hh}:${mm}` : '')
+                  setError('')
+                }}
+              >
+                <option value="">MM</option>
+                {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
             {minutesUntil !== null && minutesUntil > 0 && (
               <span className="modal-time-badge">{formatTimeLeft(minutesUntil)}</span>
             )}
@@ -328,8 +366,12 @@ function ReminderModal({ onSave, onClose, onTest, displayInfo }: {
 
         {/* Buttons */}
         <div className="modal-actions">
-          <button className={`modal-test ${testFired ? 'fired' : ''}`} onClick={handleTest}>
-            {testFired ? '✈ Sent!' : '▶ Test'}
+          <button
+            className={`modal-test ${testCooldown ? 'fired' : ''}`}
+            onClick={handleTest}
+            disabled={testCooldown}
+          >
+            {testCooldown ? '✈ Sent!' : '▶ Test'}
           </button>
           <button
             className="modal-save"
@@ -344,18 +386,17 @@ function ReminderModal({ onSave, onClose, onTest, displayInfo }: {
   )
 }
 
-// ── App ────────────────────────────────────────────────────────────────────────
 
-const INTER_FLIGHT_DELAY = 1200
+
+// ── App ────────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [stage, setStage] = useState({ w: window.innerWidth, h: window.innerHeight })
-  const [flight, setFlight] = useState<Flight | null>(null)
+  // Array of active flights — each flies independently, removes itself when done
+  const [flights, setFlights] = useState<Flight[]>([])
   const [showModal, setShowModal] = useState(false)
   const [displayInfo, setDisplayInfo] = useState<DisplayInfo | null>(null)
 
-  const flightQueueRef = useRef<Flight[]>([])
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
   // Stage sizing + capture display info for modal centering
@@ -365,12 +406,10 @@ export default function App() {
     if (window.electronAPI) {
       const cleanup = window.electronAPI.onDisplayInfo((info: any) => {
         setStage({ w: info.totalBounds.width, h: info.totalBounds.height })
-        // Store primary bounds for modal positioning
         if (info.primaryBounds) {
           setDisplayInfo({ totalBounds: info.totalBounds, primaryBounds: info.primaryBounds })
         }
       })
-      // Also fetch immediately in case the event already fired
       window.electronAPI.getDisplayInfo?.().then((info: any) => {
         if (info?.primaryBounds) {
           setDisplayInfo({ totalBounds: info.totalBounds, primaryBounds: info.primaryBounds })
@@ -393,25 +432,15 @@ export default function App() {
     window.electronAPI?.notifyModalClosed?.()
   }, [])
 
-  // Flight queue
-  const popNextFlight = useCallback(() => {
-    const next = flightQueueRef.current.shift()
-    setFlight(next ?? null)
+  // Add a flight to the active array — no queue, all fly simultaneously
+  const addFlight = useCallback((f: Flight) => {
+    setFlights(prev => [...prev, f])
   }, [])
 
-  const onDone = useCallback((_id: string) => {
-    setFlight(null)
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(popNextFlight, INTER_FLIGHT_DELAY)
-  }, [popNextFlight])
-
-  const enqueue = useCallback((f: Flight) => {
-    if (!flight && flightQueueRef.current.length === 0) {
-      setFlight(f)
-    } else {
-      flightQueueRef.current.push(f)
-    }
-  }, [flight])
+  // Remove a flight by id when its animation completes
+  const removeFlight = useCallback((id: string) => {
+    setFlights(prev => prev.filter(f => f.id !== id))
+  }, [])
 
   // Save reminder → schedule timers
   const handleSaveReminder = useCallback((data: Omit<Reminder, 'id' | 'createdAt'>) => {
@@ -420,21 +449,20 @@ export default function App() {
       const fireAt = data.meetingTime.getTime() - offsetMin * 60 * 1000
       const delayMs = fireAt - Date.now()
       if (delayMs <= 0) return
-      const t = setTimeout(() => enqueue(flightFromReminder(reminder, offsetMin)), delayMs)
+      const t = setTimeout(() => addFlight(flightFromReminder(reminder, offsetMin)), delayMs)
       notifTimersRef.current.push(t)
     })
-  }, [enqueue])
+  }, [addFlight])
 
-  // Test run: fire a banner immediately with the current form state
+  // Test: immediately add a flight
   const handleTestRun = useCallback((name: string, emoji: string, meetingTime: Date) => {
     const testReminder: Reminder = {
       id: uid(), name, emoji, meetingTime, offsetsMin: [5], createdAt: Date.now(),
     }
-    enqueue(flightFromReminder(testReminder, 5))
-  }, [enqueue])
+    addFlight(flightFromReminder(testReminder, 5))
+  }, [addFlight])
 
   useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current)
     notifTimersRef.current.forEach(clearTimeout)
   }, [])
 
@@ -442,15 +470,15 @@ export default function App() {
     <>
       <div className="overlay-stage">
         <AnimatePresence>
-          {flight && (
+          {flights.map(f => (
             <SingleFlight
-              key={flight.id}
-              flight={flight}
+              key={f.id}
+              flight={f}
               stageW={stage.w}
               stageH={stage.h}
-              onDone={onDone}
+              onDone={removeFlight}
             />
-          )}
+          ))}
         </AnimatePresence>
       </div>
 
