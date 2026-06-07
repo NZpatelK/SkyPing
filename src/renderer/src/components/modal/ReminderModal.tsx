@@ -32,6 +32,15 @@ const VPOS_OPTIONS: { value: NotificationSettings['verticalPosition']; label: st
   { value: 'bottom', label: 'Bottom', icon: '⬇️' },
 ]
 
+// ── Banner size options ────────────────────────────────────────────────────────
+
+const SIZE_OPTIONS: { value: NotificationSettings['bannerSize']; label: string; hint: string }[] = [
+  { value: 'S',  label: 'S',  hint: 'Small — subtle' },
+  { value: 'M',  label: 'M',  hint: 'Medium — default' },
+  { value: 'L',  label: 'L',  hint: 'Large — hard to miss' },
+  { value: 'XL', label: 'XL', hint: 'Extra large — impossible to miss' },
+]
+
 // ── Reminder Modal ─────────────────────────────────────────────────────────────
 
 export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders, onEdit, onDelete }: ReminderModalProps) {
@@ -48,6 +57,7 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
   const [notifSettings, setNotifSettings] = useState<NotificationSettings>({
     speed: 'normal',
     verticalPosition: 'top',
+    bannerSize: 'M',
   })
 
   // ── Pixel-perfect centre of the primary display within the canvas ────────────
@@ -323,6 +333,23 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
                     >
                       <span className="notif-vpos-icon">{opt.icon}</span>
                       <span className="notif-vpos-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Banner size */}
+              <div className="notif-subsection">
+                <span className="notif-sub-label">Banner size</span>
+                <div className="notif-size-row">
+                  {SIZE_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`notif-size-chip ${notifSettings.bannerSize === opt.value ? 'selected' : ''}`}
+                      onClick={() => setNotifSettings(s => ({ ...s, bannerSize: opt.value }))}
+                      title={opt.hint}
+                    >
+                      <span className="notif-size-label">{opt.label}</span>
                     </button>
                   ))}
                 </div>

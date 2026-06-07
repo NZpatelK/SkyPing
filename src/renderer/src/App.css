@@ -813,6 +813,47 @@
   color: rgba(255,255,255,0.95);
 }
 
+/* ── Banner size chips ────────────────────────────────────────────────────────── */
+
+.notif-size-row {
+  display: flex;
+  gap: 8px;
+}
+
+.notif-size-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.notif-size-chip:hover:not(.selected) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.notif-size-chip.selected {
+  background: rgba(99, 179, 237, 0.18);
+  border-color: rgba(99, 179, 237, 0.55);
+}
+
+.notif-size-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.03em;
+}
+
+.notif-size-chip.selected .notif-size-label {
+  color: rgb(99, 179, 237);
+}
+
 /* ═══════════════════════════════════════════════════════════
    TEST BUTTON — ANIMATED TAKEOFF
 ═══════════════════════════════════════════════════════════ */

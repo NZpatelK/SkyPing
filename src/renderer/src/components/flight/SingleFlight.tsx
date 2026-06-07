@@ -15,7 +15,9 @@ interface SingleFlightProps {
 // ── Single animated plane + banner ────────────────────────────────────────────
 
 export function SingleFlight({ flight, stageW, stageH, onDone }: SingleFlightProps) {
-  const startX = -TOTAL_W - 20
+  const s = flight.sizeMult ?? 1.0
+  const scaledTotal = TOTAL_W * s
+  const startX = -scaledTotal - 20
   const endX = stageW + 20
   const duration = (endX - startX) / flight.speedPx
   const yPx = (flight.yPct / 100) * stageH
@@ -34,7 +36,8 @@ export function SingleFlight({ flight, stageW, stageH, onDone }: SingleFlightPro
       }}
       onAnimationComplete={() => onDone(flight.id)}
     >
-      <div className="flight-rig">
+      {/* scale the entire rig uniformly by sizeMult */}
+      <div className="flight-rig" style={{ transform: `scale(${s})`, transformOrigin: 'left center' }}>
         <div className="banner" style={{
           background: `linear-gradient(135deg,
             hsl(${flight.colorHue}, 90%, 55%) 0%,

@@ -4,10 +4,12 @@ export type ReminderType = 'meeting' | 'deadline' | 'focus' | 'break' | 'persona
 
 export type FlightSpeed = 'slow' | 'normal' | 'fast' | 'sonic'
 export type VerticalPosition = 'top' | 'center' | 'bottom'
+export type BannerSize = 'S' | 'M' | 'L' | 'XL'
 
 export interface NotificationSettings {
   speed: FlightSpeed
   verticalPosition: VerticalPosition
+  bannerSize: BannerSize
 }
 
 export interface Reminder {
@@ -29,6 +31,7 @@ export interface Flight {
   yPct: number
   driftAmp: number
   driftPeriod: number
+  sizeMult: number
 }
 
 export interface DisplayInfo {

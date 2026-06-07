@@ -1,4 +1,4 @@
-import type { Flight, Reminder, ReminderType, NotificationSettings, FlightSpeed, VerticalPosition } from '../types'
+import type { Flight, Reminder, ReminderType, NotificationSettings, FlightSpeed, VerticalPosition, BannerSize } from '../types'
 import { HUE_BY_OFFSET, REMINDER_TYPES } from '../constants'
 
 // ── ID / random helpers ────────────────────────────────────────────────────────
@@ -57,6 +57,16 @@ export function yPctFromPosition(pos: VerticalPosition): number {
   }
 }
 
+/** Map BannerSize to a scale multiplier */
+export function sizeMultFromBannerSize(size: BannerSize): number {
+  switch (size) {
+    case 'S':  return 0.65
+    case 'M':  return 1.0
+    case 'L':  return 1.4
+    case 'XL': return 1.9
+  }
+}
+
 // ── Flight factory ─────────────────────────────────────────────────────────────
 
 /** Returns the hue for a given offset minute, falling back to 210 */
@@ -80,6 +90,7 @@ export function flightFromReminder(
     yPct:    settings ? yPctFromPosition(settings.verticalPosition) : rand(10, 35),
     driftAmp: rand(12, 28),
     driftPeriod: rand(3, 5),
+    sizeMult: settings ? sizeMultFromBannerSize(settings.bannerSize) : 1.0,
   }
 }
 
