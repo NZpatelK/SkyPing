@@ -160,7 +160,7 @@
 
 .modal-columns {
   display: flex;
-  height: 520px;
+  height: 640px;
 }
 
 .modal-left {
@@ -372,36 +372,7 @@
   padding-top: 12px;
 }
 
-.modal-test {
-  flex-shrink: 0;
-  padding: 12px 18px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.8);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
-  white-space: nowrap;
-}
-.modal-test:hover:not(:disabled):not(.dimmed) {
-  background: rgba(255,255,255,0.14);
-  border-color: rgba(255,255,255,0.35);
-  color: #fff;
-}
-.modal-test.fired,
-.modal-test:disabled {
-  background: rgba(100, 210, 140, 0.2);
-  border-color: rgba(100, 210, 140, 0.4);
-  color: rgba(130, 230, 160, 0.95);
-  cursor: not-allowed;
-}
-.modal-test.dimmed {
-  opacity: 0.4;
-  cursor: default;
-}
+/* modal-test styles moved to NOTIFICATION SETTINGS section below */
 
 .modal-save {
   flex: 1;
@@ -708,3 +679,220 @@
 }
 .edit-save:hover:not(:disabled) { opacity: 0.85; }
 .edit-save:disabled { opacity: 0.3; cursor: not-allowed; }
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION SETTINGS SECTION
+═══════════════════════════════════════════════════════════ */
+
+.notif-settings-section {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 12px 14px 14px;
+  margin-top: 2px;
+}
+
+.notif-settings-label {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5) !important;
+  margin-bottom: 12px !important;
+}
+
+.notif-settings-label-icon {
+  font-size: 13px;
+  line-height: 1;
+  filter: grayscale(0.2);
+}
+
+/* ── Subsection (speed / vpos) ── */
+.notif-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.notif-subsection:last-child { margin-bottom: 0; }
+
+.notif-sub-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* ── Speed chips ── */
+.notif-speed-row {
+  display: flex;
+  gap: 6px;
+}
+
+.notif-speed-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.notif-speed-chip:hover:not(.selected) {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.notif-speed-chip.selected {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.notif-speed-emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+.notif-speed-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+}
+.notif-speed-chip.selected .notif-speed-label {
+  color: rgba(255,255,255,0.9);
+}
+
+/* ── Vertical position chips ── */
+.notif-vpos-row {
+  display: flex;
+  gap: 6px;
+}
+
+.notif-vpos-chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.notif-vpos-chip:hover:not(.selected) {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+.notif-vpos-chip.selected {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.notif-vpos-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.notif-vpos-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+.notif-vpos-chip.selected .notif-vpos-label {
+  color: rgba(255,255,255,0.95);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TEST BUTTON — ANIMATED TAKEOFF
+═══════════════════════════════════════════════════════════ */
+
+.modal-test {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  white-space: nowrap;
+}
+.modal-test:hover:not(:disabled):not(.dimmed) {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.35);
+  color: #fff;
+}
+.modal-test.fired,
+.modal-test:disabled {
+  background: rgba(100, 210, 140, 0.2);
+  border-color: rgba(100, 210, 140, 0.4);
+  color: rgba(130, 230, 160, 0.95);
+  cursor: not-allowed;
+}
+.modal-test.dimmed {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Plane icon inside button */
+.test-plane-icon {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.1s;
+}
+
+/* Takeoff animation — flies right and up, fades out, returns */
+@keyframes plane-takeoff {
+  0%   { transform: translate(0, 0)   rotate(0deg)   scale(1);   opacity: 1; }
+  35%  { transform: translate(18px, -10px) rotate(-20deg) scale(1.1); opacity: 1; }
+  60%  { transform: translate(44px, -22px) rotate(-28deg) scale(0.9); opacity: 0; }
+  61%  { transform: translate(-8px, 4px)  rotate(0deg)   scale(0.8); opacity: 0; }
+  80%  { transform: translate(-4px, 2px)  rotate(0deg)   scale(1.05); opacity: 0.7; }
+  100% { transform: translate(0, 0)   rotate(0deg)   scale(1);   opacity: 1; }
+}
+
+.test-plane-icon.launching {
+  animation: plane-takeoff 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Ripple burst on launch */
+.modal-test::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255,255,255,0.18);
+  opacity: 0;
+  transform: scale(0.85);
+  transition: none;
+}
+.modal-test:active::after {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.12s, transform 0.12s;
+}
+
+.test-btn-label {
+  /* label stays steady while icon flies */
+  display: inline-block;
+}

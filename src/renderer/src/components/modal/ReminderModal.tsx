@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import type { DisplayInfo, Reminder, ReminderType } from '../../types'
+import type { DisplayInfo, NotificationSettings, Reminder, ReminderType } from '../../types'
 import { REMINDER_TYPES, MODAL_W, MODAL_H } from '../../constants'
 import { getOffsetOptions, formatOffset, reminderTypeKeys } from '../../utils'
 import { ActiveRemindersPanel } from '../reminders/ActiveRemindersPanel'
@@ -8,12 +8,29 @@ import { ActiveRemindersPanel } from '../reminders/ActiveRemindersPanel'
 interface ReminderModalProps {
   onSave: (r: Omit<Reminder, 'id' | 'createdAt'>) => void
   onClose: () => void
-  onTest: (name: string, type: ReminderType, meetingTime: Date) => void
+  onTest: (name: string, type: ReminderType, meetingTime: Date, settings: NotificationSettings) => void
   displayInfo: DisplayInfo | null
   reminders: Reminder[]
   onEdit: (updated: Reminder) => void
   onDelete: (id: string) => void
 }
+
+// ── Speed options ──────────────────────────────────────────────────────────────
+
+const SPEED_OPTIONS: { value: NotificationSettings['speed']; label: string; emoji: string; hint: string }[] = [
+  { value: 'slow',   label: 'Slow',   emoji: '🛩️',  hint: 'Leisurely cruise' },
+  { value: 'normal', label: 'Normal', emoji: '✈️',  hint: 'Standard flight' },
+  { value: 'fast',   label: 'Fast',   emoji: '🚀',  hint: 'Express delivery' },
+  { value: 'sonic',  label: 'Sonic',  emoji: '⚡',  hint: 'Blink and miss it' },
+]
+
+// ── Vertical position options ──────────────────────────────────────────────────
+
+const VPOS_OPTIONS: { value: NotificationSettings['verticalPosition']; label: string; icon: string }[] = [
+  { value: 'top',    label: 'Top',    icon: '⬆️' },
+  { value: 'center', label: 'Center', icon: '↔️' },
+  { value: 'bottom', label: 'Bottom', icon: '⬇️' },
+]
 
 // ── Reminder Modal ─────────────────────────────────────────────────────────────
 
@@ -24,7 +41,14 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
   const [selectedOffsets, setSelectedOffsets] = useState<Set<number>>(new Set())
   const [error, setError] = useState('')
   const [testCooldown, setTestCooldown] = useState(false)
+  const [testLaunching, setTestLaunching] = useState(false)
   const testTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Notification settings state ───────────────────────────────────────────────
+  const [notifSettings, setNotifSettings] = useState<NotificationSettings>({
+    speed: 'normal',
+    verticalPosition: 'top',
+  })
 
   // ── Pixel-perfect centre of the primary display within the canvas ────────────
   const modalStyle = (() => {
@@ -104,7 +128,12 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
     if (testCooldown) return
     const meetingTime = getMeetingDate() ?? new Date(Date.now() + 5 * 60000)
     const displayName = name.trim() ? `Test - ${name.trim()}` : 'Test - Reminder'
-    onTest(displayName, reminderType, meetingTime)
+
+    // Trigger takeoff animation
+    setTestLaunching(true)
+    setTimeout(() => setTestLaunching(false), 900)
+
+    onTest(displayName, reminderType, meetingTime, notifSettings)
     setTestCooldown(true)
     if (testTimerRef.current) clearTimeout(testTimerRef.current)
     testTimerRef.current = setTimeout(() => {
@@ -257,6 +286,49 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
               )}
             </div>
 
+            {/* ── Notification Settings Section ── */}
+            <div className="modal-field notif-settings-section">
+              <label className="modal-label notif-settings-label">
+                <span className="notif-settings-label-icon">✈️</span>
+                Notification settings
+              </label>
+
+              {/* Flight speed */}
+              <div className="notif-subsection">
+                <span className="notif-sub-label">Flight speed</span>
+                <div className="notif-speed-row">
+                  {SPEED_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`notif-speed-chip ${notifSettings.speed === opt.value ? 'selected' : ''}`}
+                      onClick={() => setNotifSettings(s => ({ ...s, speed: opt.value }))}
+                      title={opt.hint}
+                    >
+                      <span className="notif-speed-emoji">{opt.emoji}</span>
+                      <span className="notif-speed-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Vertical position */}
+              <div className="notif-subsection">
+                <span className="notif-sub-label">Vertical position</span>
+                <div className="notif-vpos-row">
+                  {VPOS_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`notif-vpos-chip ${notifSettings.verticalPosition === opt.value ? 'selected' : ''}`}
+                      onClick={() => setNotifSettings(s => ({ ...s, verticalPosition: opt.value }))}
+                    >
+                      <span className="notif-vpos-icon">{opt.icon}</span>
+                      <span className="notif-vpos-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {error && <p className="modal-error">{error}</p>}
 
             {/* Action buttons */}
@@ -267,7 +339,12 @@ export function ReminderModal({ onSave, onClose, onTest, displayInfo, reminders,
                 disabled={testCooldown}
                 title={canTest ? `Test as "Test - ${name.trim()}"` : 'Enter a name to test'}
               >
-                {testCooldown ? '✈ Sent!' : '▶ Test'}
+                <span className={`test-plane-icon ${testLaunching ? 'launching' : ''}`}>
+                  ✈️
+                </span>
+                <span className="test-btn-label">
+                  {testCooldown ? 'Sent!' : 'Test flight'}
+                </span>
               </button>
               <button
                 className="modal-save"

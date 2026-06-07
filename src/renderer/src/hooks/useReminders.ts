@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Flight, Reminder, ReminderType } from '../types'
+import type { Flight, Reminder, ReminderType, NotificationSettings } from '../types'
 import { uid, flightFromReminder } from '../utils'
 
 // ── useReminders ───────────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ interface UseRemindersReturn {
   handleSaveReminder: (data: Omit<Reminder, 'id' | 'createdAt'>) => void
   handleEditReminder: (updated: Reminder) => void
   handleDeleteReminder: (id: string) => void
-  handleTestRun: (name: string, type: ReminderType, meetingTime: Date) => void
+  handleTestRun: (name: string, type: ReminderType, meetingTime: Date, settings: NotificationSettings) => void
 }
 
 export function useReminders(addFlight: (f: Flight) => void): UseRemindersReturn {
@@ -58,12 +58,17 @@ export function useReminders(addFlight: (f: Flight) => void): UseRemindersReturn
     setReminders(prev => prev.filter(r => r.id !== id))
   }, [cancelReminder])
 
-  // Test: immediately fire a flight with "Test - {name}" label (offset=5 for display)
-  const handleTestRun = useCallback((name: string, type: ReminderType, meetingTime: Date) => {
+  // Test: immediately fire a flight with current notification settings applied
+  const handleTestRun = useCallback((
+    name: string,
+    type: ReminderType,
+    meetingTime: Date,
+    settings: NotificationSettings
+  ) => {
     const testReminder: Reminder = {
       id: uid(), name, type, meetingTime, offsetsMin: [5], createdAt: Date.now(),
     }
-    addFlight(flightFromReminder(testReminder, 5))
+    addFlight(flightFromReminder(testReminder, 5, settings))
   }, [addFlight])
 
   // Clear all timers on unmount

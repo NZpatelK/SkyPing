@@ -22,7 +22,7 @@ export const HUE_BY_OFFSET: Record<number, number> = {
 // ── Modal dimensions ───────────────────────────────────────────────────────────
 
 export const MODAL_W = 780
-export const MODAL_H = 520
+export const MODAL_H = 640
 
 // ── Flight / plane banner dimensions ──────────────────────────────────────────
 

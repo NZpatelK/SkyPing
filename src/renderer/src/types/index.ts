@@ -2,6 +2,14 @@
 
 export type ReminderType = 'meeting' | 'deadline' | 'focus' | 'break' | 'personal' | 'review' | 'other'
 
+export type FlightSpeed = 'slow' | 'normal' | 'fast' | 'sonic'
+export type VerticalPosition = 'top' | 'center' | 'bottom'
+
+export interface NotificationSettings {
+  speed: FlightSpeed
+  verticalPosition: VerticalPosition
+}
+
 export interface Reminder {
   id: string
   name: string
