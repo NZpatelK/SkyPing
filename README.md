@@ -9,7 +9,7 @@ SkyPing is a macOS desktop app that delivers your meeting and task reminders as 
 
 ## 🎬 Video Demo
 
-> 📹 **[Watch the demo here](#)** ← *(link coming soon)*
+> 📹 **[Watch the demo here](https://www.linkedin.com/posts/karan-h-patel_productivity-buildinpublic-opensource-ugcPost-7469508963798257664-Lv9U/?utm_source=share&utm_medium=member_desktop&rcm=ACoAADBGF6QB0QMDySUwhCV0IdNp7xgY9h60CLQ)** 
 
 ---
 
