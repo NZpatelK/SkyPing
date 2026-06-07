@@ -1,3 +1,4 @@
+
 # ✈️ SkyPing
 
 > **Reminders that fly across your screen — literally.**
@@ -16,7 +17,8 @@ SkyPing is a macOS desktop app that delivers your meeting and task reminders as 
 
 - 🛩️ **Animated flight notifications** — a plane pulls a banner across your screen above every other window
 - 📅 **Multiple reminder types** — Meeting, Deadline, Focus, Break, Personal, Review, Other — each with its own colour and emoji
-- ⚙️ **Notification settings** — choose flight speed (Slow / Normal / Fast / Sonic) and vertical position (Top / Center / Bottom) to suit your comfort
+- ⚙️ **Notification settings** — choose flight speed (Slow / Normal / Fast / Sonic), vertical position (Top / Center / Bottom), and banner size (S / M / L / XL) to suit your comfort
+- 🔲 **Banner size control** — scale the banner from a subtle small to an XL that is physically impossible to miss
 - 🧪 **Live test button** — fire a test flight instantly with your current settings before saving
 - ⏰ **Smart offset scheduling** — get reminded 1 min, 5 min, 30 min, or up to 2 hours before — options auto-adjust based on how far away your event is
 - 🖥️ **Multi-monitor aware** — the overlay spans every display and always centres the modal on your primary screen
@@ -27,7 +29,6 @@ SkyPing is a macOS desktop app that delivers your meeting and task reminders as 
 
 ## 🖥️ How It Looks
 
-```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    [your normal desktop / apps here]
 
@@ -36,7 +37,7 @@ SkyPing is a macOS desktop app that delivers your meeting and task reminders as 
                                 ╚════════════════════════
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+
 
 A plane enters from the left, pulls a coloured banner, and exits right. Fully above every other app, even fullscreen ones.
 
@@ -107,7 +108,7 @@ Opened via `Cmd+Shift+R`. A dark glassmorphism modal appears centred on your pri
 2. Enter a name
 3. Set the time (HH:MM selectors)
 4. Choose when to be reminded (offset chips auto-populate based on how far away the time is)
-5. Configure notification settings — flight speed and vertical position
+5. Configure notification settings — flight speed, vertical position, and banner size
 6. Hit **Test flight** to preview, then **Save reminder**
 
 **Right column — Active Reminders panel:**
@@ -121,11 +122,12 @@ Each notification fires as a `Flight` object with these properties:
 |---|---|
 | `speedPx` | Pixels per second the plane travels (set by your speed preference) |
 | `yPct` | Vertical position as a % of screen height (set by your position preference) |
+| `sizeMult` | Scale multiplier applied to the entire plane + banner rig (set by your size preference) |
 | `driftAmp` | How many pixels the plane bobs up and down |
 | `driftPeriod` | How many seconds one full bob cycle takes |
 | `colorHue` | HSL hue of the banner colour (varies by reminder type) |
 
-[Framer Motion](https://www.framer.com/motion/) animates the plane from `x: -totalWidth` to `x: screenWidth + margin`, while a separate looping `y` animation creates the natural floating drift. The banner has a CSS `rotateY` + `rotateZ` flap animation to simulate wind.
+[Framer Motion](https://www.framer.com/motion/) animates the plane from `x: -totalWidth` to `x: screenWidth + margin`, while a separate looping `y` animation creates the natural floating drift. The banner has a CSS `rotateY` + `rotateZ` flap animation to simulate wind. The entire rig is scaled uniformly using CSS `transform: scale(sizeMult)` so the plane and banner always stay proportional to each other.
 
 ### Notification Scheduling
 
@@ -151,7 +153,7 @@ Communication between the Electron main process and the React renderer goes thro
 
 ### Notification Settings
 
-Two settings live in the modal and apply to both test flights and real reminders:
+Three settings live in the modal and apply to both test flights and real reminders:
 
 **Flight Speed:**
 | Option | Speed Range |
@@ -168,7 +170,15 @@ Two settings live in the modal and apply to both test flights and real reminders
 | ↔️ Center | 40–60% |
 | ⬇️ Bottom | 75–88% from top |
 
-Within each range, values are randomised slightly per flight so repeated reminders don't stack on the exact same path.
+**Banner Size:**
+| Option | Scale | Best for |
+|---|---|---|
+| S | 0.65× | Subtle — stays out of the way |
+| M | 1.0× | Default — balanced and clear |
+| L | 1.4× | Hard to miss |
+| XL | 1.9× | Impossible to miss — great for critical deadlines |
+
+Within each range, speed and position values are randomised slightly per flight so repeated reminders don't stack on the exact same path.
 
 ---
 
@@ -196,14 +206,15 @@ electron-overlay/
 │           │
 │           ├── types/
 │           │   └── index.ts      ← Shared types (Reminder, Flight,
-│           │                        NotificationSettings, etc.)
+│           │                        NotificationSettings, BannerSize, etc.)
 │           │
 │           ├── constants/
 │           │   └── index.ts      ← REMINDER_TYPES, colours, dimensions
 │           │
 │           ├── utils/
 │           │   └── index.ts      ← flightFromReminder(), getOffsetOptions(),
-│           │                        speedPxFromSetting(), yPctFromPosition()
+│           │                        speedPxFromSetting(), yPctFromPosition(),
+│           │                        sizeMultFromBannerSize()
 │           │
 │           ├── hooks/
 │           │   ├── useReminders.ts   ← Reminder CRUD + timer scheduling
@@ -211,7 +222,7 @@ electron-overlay/
 │           │
 │           └── components/
 │               ├── flight/
-│               │   └── SingleFlight.tsx   ← Animated plane + banner
+│               │   └── SingleFlight.tsx   ← Animated plane + banner (size-aware)
 │               ├── modal/
 │               │   └── ReminderModal.tsx  ← New reminder form +
 │               │                            notification settings
@@ -270,3 +281,4 @@ MIT — do whatever you like with it.
 ---
 
 *Built with ✈️ and too many late-night meetings.*
+```
